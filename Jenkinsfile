@@ -24,15 +24,17 @@ pipeline {
             }
         }
 
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    // Use plain text credentials (not recommended)
-                    sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
-                    docker.image("${IMAGE_NAME}:${TAG}").push()
-                }
-            }
+                stage('Push to Docker Hub') {
+                    steps {
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials1', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh '''
+                                echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                                docker push krishna728/education-animation:v1
+                            '''
+                        }
+                    }
         }
+
 
         stage('Deploy to Kubernetes') {
             steps {
