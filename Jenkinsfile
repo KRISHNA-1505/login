@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = "krishna728/education-animation"
         TAG = "v1"
         DOCKER_USERNAME = "krishna728"
-        DOCKER_PASSWORD = "rks1505$$$"  // Not secure - avoid using in production
+        DOCKER_PASSWORD = "1234567890"  // Not secure - avoid using in production
         KUBECONFIG = "/home/kisanth/.kube/config"  // Set the correct kubeconfig path
     }
 
