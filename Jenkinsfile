@@ -4,9 +4,8 @@ pipeline {
     environment {
         IMAGE_NAME = "krishna728/education-animation"
         TAG = "v1"
-        DOCKER_USERNAME = "krishna728"
-        DOCKER_PASSWORD = "1234567890"  // Not secure - avoid using in production
-        KUBECONFIG = "/home/kisanth/.kube/config"  // Set the correct kubeconfig path
+        // DOCKER_USERNAME and DOCKER_PASSWORD will come from credentials in 'Push to Docker Hub' stage
+        KUBECONFIG = "/var/lib/jenkins/.kube/config"  // Jenkins user's kubeconfig
     }
 
     stages {
@@ -24,24 +23,25 @@ pipeline {
             }
         }
 
-                stage('Push to Docker Hub') {
-                    steps {
-                        withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials1', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh '''
-                                echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                                docker push krishna728/education-animation:v1
-                            '''
-                        }
-                    }
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials1', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh '''
+                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                        docker push ${IMAGE_NAME}:${TAG}
+                    '''
+                }
+            }
         }
-
 
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Apply Kubernetes deployment and service using kubectl
-                    sh 'kubectl apply -f k8s/deployment.yaml --validate=false'
-                    sh 'kubectl apply -f k8s/service.yaml --validate=false'
+                    sh '''
+                        export KUBECONFIG=${KUBECONFIG}
+                        kubectl apply -f k8s/deployment.yaml --validate=false
+                        kubectl apply -f k8s/service.yaml --validate=false
+                    '''
                 }
             }
         }
