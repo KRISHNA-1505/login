@@ -38,7 +38,7 @@ pipeline {
             steps {
                 script {
                     sh "kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/deployment.yaml --validate=false"
-                    sh "kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/service.yaml --validate=false"
+                    
                 }
             }
         }
