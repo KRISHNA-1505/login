@@ -4,8 +4,9 @@ pipeline {
     environment {
         IMAGE_NAME = "krishna728/education-animation"
         TAG = "v1"
-        DOCKER_USERNAME = "1234567890"
-        KUBECONFIG = "/home/kisanth/.kube/config"  // Make sure Jenkins user can access this
+        DOCKER_USERNAME = "krishna728"
+        DOCKER_PASSWORD = "1234567890"  // Not secure - avoid using in production
+        KUBECONFIG = "/home/kisanth/.kube/config"  // Set the correct kubeconfig path
     }
 
     stages {
@@ -25,11 +26,10 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    script {
-                        sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
-                        docker.image("${IMAGE_NAME}:${TAG}").push()
-                    }
+                script {
+                    // Use plain text credentials (not recommended)
+                    sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+                    docker.image("${IMAGE_NAME}:${TAG}").push()
                 }
             }
         }
@@ -37,8 +37,9 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    sh "kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/deployment.yaml --validate=false"
-                    
+                    // Apply Kubernetes deployment and service using kubectl
+                    sh 'kubectl apply -f k8s/deployment.yaml --validate=false'
+                    sh 'kubectl apply -f k8s/service.yaml --validate=false'
                 }
             }
         }
